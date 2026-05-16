@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+// Disable worker in server environment
+pdfjsLib.GlobalWorkerOptions.workerSrc = "";
 
 type PdfTextItem = {
   str: string;
@@ -19,15 +22,12 @@ function isTextItem(item: unknown): item is PdfTextItem {
 }
 
 async function extractPdfText(data: Uint8Array): Promise<string> {
-  const loadingTask = getDocument({
-    data,
-    disableWorker: true,
-    disableFontFace: true,
-    useWorkerFetch: false,
-    isEvalSupported: false,
-    useSystemFonts: true,
-    verbosity: 0,
-  });
+  const loadingTask = pdfjsLib.getDocument({
+  data,
+  disableFontFace: true,
+  useWorkerFetch: false,
+  verbosity: 0,
+});
 
   const pdf = await loadingTask.promise;
 
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
     const file = formData.get("file");
 
-    // Production-safe file validation
+    // Production-safe validation
     if (
       !file ||
       typeof file !== "object" ||
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Optional size limit (10MB)
+    // 10MB limit
     const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
     if (uploadedFile.size > MAX_FILE_SIZE) {
@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
         {
           success: false,
           error:
-            "No readable text found in this PDF. If this is a scanned document, please upload a text-based PDF.",
+            "No readable text found in this PDF. Please upload a text-based PDF.",
         },
         { status: 422 }
       );
@@ -154,15 +154,15 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     console.error("PDF PARSE ERROR:", error);
 
-    const errorMessage =
+    const message =
       error instanceof Error
         ? error.message
-        : "Failed to extract text from PDF";
+        : "Failed to parse PDF";
 
     return NextResponse.json(
       {
         success: false,
-        error: errorMessage,
+        error: message,
       },
       { status: 500 }
     );
