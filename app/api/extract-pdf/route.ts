@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
-import * as pdfjsWorkerModule from "pdfjs-dist/legacy/build/pdf.worker.mjs";
 
 export const runtime = "nodejs";
-
-declare global {
-  // PDF.js uses this global to run a fake worker in Node/serverless routes.
-  var pdfjsWorker: typeof pdfjsWorkerModule | undefined;
-}
-
-globalThis.pdfjsWorker ||= pdfjsWorkerModule;
+export const dynamic = "force-dynamic";
 
 type PdfTextItem = {
   str: string;
@@ -25,36 +18,52 @@ function isTextItem(item: unknown): item is PdfTextItem {
   );
 }
 
-async function extractPdfText(data: Uint8Array) {
-  const pdf = await getDocument({
+async function extractPdfText(data: Uint8Array): Promise<string> {
+  const loadingTask = getDocument({
     data,
+    disableWorker: true,
     disableFontFace: true,
     useWorkerFetch: false,
-  }).promise;
+    isEvalSupported: false,
+    useSystemFonts: true,
+    verbosity: 0,
+  });
 
-  const pages: string[] = [];
+  const pdf = await loadingTask.promise;
 
-  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-    const page = await pdf.getPage(pageNumber);
-    const content = await page.getTextContent();
-    const textItems = content.items.filter(isTextItem) as PdfTextItem[];
-    const pageText = textItems
-      .map((item) => `${item.str}${item.hasEOL ? "\n" : " "}`)
-      .join("")
-      .replace(/[ \t]+\n/g, "\n")
-      .replace(/[ \t]{2,}/g, " ")
-      .trim();
+  try {
+    const pages: string[] = [];
 
-    if (pageText) {
-      pages.push(pageText);
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      const page = await pdf.getPage(pageNumber);
+
+      try {
+        const textContent = await page.getTextContent();
+
+        const textItems = textContent.items.filter(
+          isTextItem
+        ) as PdfTextItem[];
+
+        const pageText = textItems
+          .map((item) => `${item.str}${item.hasEOL ? "\n" : " "}`)
+          .join("")
+          .replace(/[ \t]+\n/g, "\n")
+          .replace(/[ \t]{2,}/g, " ")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+
+        if (pageText.length > 0) {
+          pages.push(pageText);
+        }
+      } finally {
+        page.cleanup();
+      }
     }
 
-    page.cleanup();
+    return pages.join("\n\n").trim();
+  } finally {
+    await pdf.destroy();
   }
-
-  await pdf.destroy();
-
-  return pages.join("\n\n").trim();
 }
 
 export async function POST(req: NextRequest) {
@@ -63,49 +72,97 @@ export async function POST(req: NextRequest) {
 
     const file = formData.get("file");
 
-    if (!file || !(file instanceof File)) {
+    // Production-safe file validation
+    if (
+      !file ||
+      typeof file !== "object" ||
+      !("arrayBuffer" in file)
+    ) {
       return NextResponse.json(
-        { error: "No PDF uploaded" },
+        {
+          success: false,
+          error: "No PDF file uploaded",
+        },
         { status: 400 }
       );
     }
 
+    const uploadedFile = file as File;
+
+    // Validate PDF
     const isPdf =
-      file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+      uploadedFile.type === "application/pdf" ||
+      uploadedFile.name.toLowerCase().endsWith(".pdf");
 
     if (!isPdf) {
       return NextResponse.json(
-        { error: "Only PDF files are supported" },
+        {
+          success: false,
+          error: "Only PDF files are supported",
+        },
         { status: 400 }
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    const text = await extractPdfText(new Uint8Array(bytes));
+    // Optional size limit (10MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-    if (!text) {
+    if (uploadedFile.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "File size exceeds 10MB limit",
+        },
+        { status: 400 }
+      );
+    }
+
+    const arrayBuffer = await uploadedFile.arrayBuffer();
+
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Uploaded file is empty",
+        },
+        { status: 400 }
+      );
+    }
+
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    const extractedText = await extractPdfText(uint8Array);
+
+    if (!extractedText || extractedText.trim().length === 0) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "No readable text found in this PDF. If it is a scanned resume, please upload a text-based PDF.",
+            "No readable text found in this PDF. If this is a scanned document, please upload a text-based PDF.",
         },
         { status: 422 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      text,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        text: extractedText,
+      },
+      { status: 200 }
+    );
   } catch (error: unknown) {
-    console.error("PDF ERROR:", error);
-    const message = error instanceof Error ? error.message : "PDF extraction failed";
+    console.error("PDF PARSE ERROR:", error);
+
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : "Failed to extract text from PDF";
 
     return NextResponse.json(
       {
         success: false,
-        error: message,
+        error: errorMessage,
       },
       { status: 500 }
     );
