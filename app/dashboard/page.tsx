@@ -8,6 +8,7 @@ import {
   Clipboard,
   Copy,
   FileText,
+  FileUp,
   Loader2,
   LogOut,
   Search,
@@ -130,8 +131,10 @@ export default function DashboardPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [resumeText, setResumeText] = useState("");
+  const [resumeFileName, setResumeFileName] = useState("");
   const [jdText, setJdText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [extractingResume, setExtractingResume] = useState(false);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [query, setQuery] = useState("");
 
@@ -158,9 +161,57 @@ export default function DashboardPage() {
     router.push("/login");
   };
 
+  const handleResumeUpload = async (file: File | null) => {
+    if (!file) {
+      return;
+    }
+
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+
+    if (!isPdf) {
+      toast.error("Please upload a PDF resume.");
+      return;
+    }
+
+    setExtractingResume(true);
+    setResumeFileName(file.name);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/extract-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "PDF extraction failed");
+      }
+
+      const extractedText = typeof data.text === "string" ? data.text.trim() : "";
+
+      if (!extractedText) {
+        throw new Error("No readable text found in this PDF.");
+      }
+
+      setResumeText(extractedText);
+      toast.success("Resume text extracted from PDF.");
+    } catch (error) {
+      setResumeFileName("");
+      setResumeText("");
+      const message = error instanceof Error ? error.message : "PDF extraction failed";
+      toast.error(message);
+    } finally {
+      setExtractingResume(false);
+    }
+  };
+
   const analyzeResume = async () => {
     if (!resumeText.trim() || !jdText.trim()) {
-      toast.error("Please enter resume and job description.");
+      toast.error("Please upload a resume PDF and enter a job description.");
       return;
     }
 
@@ -245,7 +296,7 @@ export default function DashboardPage() {
             Generate structured interview intelligence.
           </h2>
           <p className="mt-4 max-w-2xl leading-7 text-zinc-400">
-            Paste your resume and target job description to receive technical,
+            Upload your resume PDF and paste the target job description to receive technical,
             HR, project, skill, and strength analysis in clean sections.
           </p>
         </motion.div>
@@ -254,13 +305,41 @@ export default function DashboardPage() {
           <div className="glass-card rounded-2xl p-5">
             <div className="mb-4 flex items-center gap-3">
               <FileText className="size-5 text-blue-300" />
-              <h3 className="text-xl font-semibold">Resume Input</h3>
+              <h3 className="text-xl font-semibold">Resume PDF</h3>
             </div>
+            <label
+              className={cn(
+                "flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/20 bg-white/[0.03] p-6 text-center transition hover:border-blue-300/60 hover:bg-white/[0.06]",
+                (extractingResume || loading) && "cursor-not-allowed opacity-70"
+              )}
+            >
+              {extractingResume ? (
+                <Loader2 className="size-8 animate-spin text-blue-200" />
+              ) : (
+                <FileUp className="size-8 text-blue-200" />
+              )}
+              <span className="mt-4 font-semibold text-white">
+                {extractingResume ? "Extracting resume text..." : "Upload resume PDF"}
+              </span>
+              <span className="mt-2 max-w-sm text-sm leading-6 text-zinc-400">
+                {resumeFileName || "The extracted text will be used for your AI interview plan."}
+              </span>
+              <input
+                type="file"
+                accept="application/pdf"
+                disabled={extractingResume || loading}
+                onChange={(e) => {
+                  handleResumeUpload(e.target.files?.[0] || null);
+                  e.currentTarget.value = "";
+                }}
+                className="sr-only"
+              />
+            </label>
             <textarea
-              placeholder="Paste your resume here..."
+              placeholder="Extracted resume text will appear here..."
               value={resumeText}
               onChange={(e) => setResumeText(e.target.value)}
-              className="premium-input min-h-[300px] w-full resize-y rounded-xl p-4 leading-7"
+              className="premium-input mt-4 min-h-[100px] w-full resize-y rounded-xl p-4 leading-7"
             />
           </div>
 
@@ -282,7 +361,7 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={analyzeResume}
-            disabled={loading}
+            disabled={loading || extractingResume}
             className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 font-semibold text-black shadow-2xl shadow-violet-500/15 transition hover:scale-[1.02] disabled:opacity-60"
           >
             {loading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
