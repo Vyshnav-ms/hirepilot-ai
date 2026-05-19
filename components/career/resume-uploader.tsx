@@ -6,6 +6,63 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+type PdfTextItem = {
+  str: string;
+  hasEOL?: boolean;
+};
+
+function isTextItem(item: unknown): item is PdfTextItem {
+  return (
+    typeof item === "object" &&
+    item !== null &&
+    "str" in item &&
+    typeof (item as PdfTextItem).str === "string"
+  );
+}
+
+async function extractPdfInBrowser(file: File) {
+  const [{ getDocument }, pdfjsWorkerModule] = await Promise.all([
+    import("pdfjs-dist/legacy/build/pdf.mjs"),
+    import("pdfjs-dist/legacy/build/pdf.worker.mjs"),
+  ]);
+
+  const workerGlobal = globalThis as typeof globalThis & {
+    pdfjsWorker?: typeof pdfjsWorkerModule;
+  };
+  workerGlobal.pdfjsWorker ||= pdfjsWorkerModule;
+
+  const pdf = await getDocument({
+    data: new Uint8Array(await file.arrayBuffer()),
+    disableFontFace: true,
+    useWorkerFetch: false,
+  }).promise;
+
+  const pages: string[] = [];
+
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+    const page = await pdf.getPage(pageNumber);
+    const content = await page.getTextContent();
+    const textItems = content.items.filter(isTextItem) as PdfTextItem[];
+    const pageText = textItems
+      .map((item) => `${item.str}${item.hasEOL ? "\n" : " "}`)
+      .join("")
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+    if (pageText) {
+      pages.push(pageText);
+    }
+
+    page.cleanup();
+  }
+
+  await pdf.destroy();
+
+  return pages.join("\n\n").trim();
+}
+
 export function ResumeUploader({
   value,
   onChange,
@@ -62,14 +119,32 @@ export function ResumeUploader({
       try {
         data = responseText ? JSON.parse(responseText) : {};
       } catch {
-        throw new Error(
-          response.ok
-            ? "PDF extraction returned an invalid response."
-            : "PDF extraction is unavailable on the live server. Paste the resume text manually while the deployment is updated."
-        );
+        const browserText = await extractPdfInBrowser(file);
+
+        if (browserText) {
+          onChange(browserText);
+          setProgress(100);
+          toast.success("Resume text extracted in your browser.");
+          return;
+        }
+
+        throw new Error("PDF extraction failed. Paste the resume text manually below.");
       }
 
       if (!response.ok) {
+        try {
+          const browserText = await extractPdfInBrowser(file);
+
+          if (browserText) {
+            onChange(browserText);
+            setProgress(100);
+            toast.success("Resume text extracted in your browser.");
+            return;
+          }
+        } catch {
+          throw new Error(data.error || "PDF extraction failed");
+        }
+
         throw new Error(data.error || "PDF extraction failed");
       }
 
