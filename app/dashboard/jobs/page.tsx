@@ -1,12 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { BriefcaseBusiness, Loader2, Search } from "lucide-react";
+import { BriefcaseBusiness, DatabaseZap, Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { JobCards } from "@/components/career/job-cards";
 import { ResumeUploader } from "@/components/career/resume-uploader";
 import { sampleJobs } from "@/lib/career-data";
 import { RecommendedJob } from "@/lib/career-types";
+import { ScrapedJob } from "@/lib/jobs/types";
+
+function scrapedToRecommendedJob(job: ScrapedJob): RecommendedJob {
+  return {
+    id: job.externalId,
+    company: job.company,
+    role: job.title,
+    salary: job.salary || "Not listed",
+    location: job.location,
+    source: job.source,
+    matchPercentage: 78,
+    workMode: job.remoteType === "Unknown" ? "Hybrid" : job.remoteType,
+    level: "Mid",
+    skills: job.tags.length > 0 ? job.tags.slice(0, 5) : ["Role match", "Career fit"],
+    applyUrl: job.applyUrl,
+  };
+}
 
 export default function JobRecommendationsPage() {
   const [resumeText, setResumeText] = useState("");
@@ -15,6 +32,7 @@ export default function JobRecommendationsPage() {
   const [mode, setMode] = useState("All");
   const [jobs, setJobs] = useState<RecommendedJob[]>(sampleJobs);
   const [loading, setLoading] = useState(false);
+  const [scraping, setScraping] = useState(false);
 
   const filteredJobs = useMemo(
     () => jobs.filter((job) => mode === "All" || job.workMode === mode),
@@ -46,6 +64,37 @@ export default function JobRecommendationsPage() {
       setJobs(sampleJobs);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const scrapeJobs = async () => {
+    setScraping(true);
+
+    try {
+      const response = await fetch("/api/jobs/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Job scraping failed");
+      }
+
+      const scrapedJobs = (data.data.jobs as ScrapedJob[]).map(scrapedToRecommendedJob);
+
+      if (scrapedJobs.length === 0) {
+        throw new Error("No jobs were scraped from the configured sources.");
+      }
+
+      setJobs(scrapedJobs);
+      toast.success(`Scraped ${scrapedJobs.length} real jobs.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Job scraping failed";
+      toast.error(message);
+    } finally {
+      setScraping(false);
     }
   };
 
@@ -90,6 +139,15 @@ export default function JobRecommendationsPage() {
             {loading ? <Loader2 className="size-4 animate-spin" /> : <BriefcaseBusiness className="size-4" />}
             {loading ? "Matching jobs..." : "Generate Job Matches"}
           </button>
+          <button
+            type="button"
+            onClick={scrapeJobs}
+            disabled={scraping}
+            className="mt-3 inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-6 font-semibold text-white transition hover:bg-white/[0.1] disabled:opacity-60"
+          >
+            {scraping ? <Loader2 className="size-4 animate-spin" /> : <DatabaseZap className="size-4" />}
+            {scraping ? "Scraping real jobs..." : "Scrape Real Jobs"}
+          </button>
         </div>
       </section>
 
@@ -116,4 +174,3 @@ export default function JobRecommendationsPage() {
     </div>
   );
 }
-
