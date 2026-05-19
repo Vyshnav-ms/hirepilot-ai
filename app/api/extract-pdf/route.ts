@@ -1,93 +1,107 @@
 import { NextRequest, NextResponse } from "next/server";
-// pdf-parse v2 uses a class-based API: PDFParse({ data }) → .getText()
-// The package is kept external (serverExternalPackages in next.config.ts)
-// so Next.js won't bundle it – this is required because pdfjs-dist and
-// @napi-rs/canvas must load as native Node.js modules at runtime.
-import { PDFParse } from "pdf-parse";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import * as pdfjsWorkerModule from "pdfjs-dist/legacy/build/pdf.worker.mjs";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function extractPdfText(buffer: Buffer): Promise<string> {
-  // pdf-parse v2: pass the buffer as `data` in LoadParameters
-  const parser = new PDFParse({ data: buffer });
-  const result = await parser.getText();
-  await parser.destroy();
+declare global {
+  // PDF.js checks this global when it needs a fake worker in Node routes.
+  var pdfjsWorker: typeof pdfjsWorkerModule | undefined;
+}
 
-  return result.text
-    .replace(/[ \t]{2,}/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+globalThis.pdfjsWorker ||= pdfjsWorkerModule;
+
+type PdfTextItem = {
+  str: string;
+  hasEOL?: boolean;
+};
+
+function isTextItem(item: unknown): item is PdfTextItem {
+  return (
+    typeof item === "object" &&
+    item !== null &&
+    "str" in item &&
+    typeof (item as PdfTextItem).str === "string"
+  );
+}
+
+async function extractPdfText(data: Uint8Array) {
+  const pdf = await getDocument({
+    data,
+    disableFontFace: true,
+    useWorkerFetch: false,
+  }).promise;
+
+  const pages: string[] = [];
+
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+    const page = await pdf.getPage(pageNumber);
+    const content = await page.getTextContent();
+    const textItems = content.items.filter(isTextItem) as PdfTextItem[];
+    const pageText = textItems
+      .map((item) => `${item.str}${item.hasEOL ? "\n" : " "}`)
+      .join("")
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/[ \t]{2,}/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+
+    if (pageText) {
+      pages.push(pageText);
+    }
+
+    page.cleanup();
+  }
+
+  await pdf.destroy();
+
+  return pages.join("\n\n").trim();
 }
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-
     const file = formData.get("file");
 
-    if (
-      !file ||
-      typeof file !== "object" ||
-      !("arrayBuffer" in file)
-    ) {
+    if (!file || !(file instanceof File)) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "No PDF uploaded",
-        },
+        { success: false, error: "No PDF uploaded" },
         { status: 400 }
       );
     }
 
-    const uploadedFile = file as File;
-
-    const isPdf =
-      uploadedFile.type === "application/pdf" ||
-      uploadedFile.name.toLowerCase().endsWith(".pdf");
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 
     if (!isPdf) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "Only PDF files are supported",
-        },
+        { success: false, error: "Only PDF files are supported" },
         { status: 400 }
       );
     }
 
-    const arrayBuffer = await uploadedFile.arrayBuffer();
+    const bytes = await file.arrayBuffer();
+    const text = await extractPdfText(new Uint8Array(bytes));
 
-    const buffer = Buffer.from(arrayBuffer);
-
-    const text = await extractPdfText(buffer);
-
-    if (!text || text.trim().length === 0) {
+    if (!text) {
       return NextResponse.json(
         {
           success: false,
-          error: "No readable text found in PDF",
+          error:
+            "No readable text found in this PDF. If it is a scanned resume, paste the resume text manually.",
         },
         { status: 422 }
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      text,
-    });
+    return NextResponse.json({ success: true, text });
   } catch (error: unknown) {
     console.error("PDF ERROR:", error);
+    const message = error instanceof Error ? error.message : "PDF extraction failed";
 
     return NextResponse.json(
-      {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "PDF parsing failed",
-      },
+      { success: false, error: message },
       { status: 500 }
     );
   }
-}
+}

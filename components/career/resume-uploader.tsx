@@ -56,7 +56,19 @@ export function ResumeUploader({
       });
       setProgress(78);
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: { error?: string; text?: string } = {};
+
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        throw new Error(
+          response.ok
+            ? "PDF extraction returned an invalid response."
+            : "PDF extraction is unavailable on the live server. Paste the resume text manually while the deployment is updated."
+        );
+      }
+
       if (!response.ok) {
         throw new Error(data.error || "PDF extraction failed");
       }
@@ -155,4 +167,3 @@ export function ResumeUploader({
     </div>
   );
 }
-
