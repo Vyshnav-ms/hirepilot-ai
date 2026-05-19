@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GitBranch, Link2, Mail } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 
 const links = [
@@ -29,6 +30,16 @@ export function SiteFooter() {
               <Link key={link.href} href={link.href} className="transition hover:text-white">
                 {link.label}
               </Link>
+            ))}
+          </div>
+          <div className="mt-5 flex gap-2">
+            {[GitBranch, Link2, Mail].map((Icon, index) => (
+              <span
+                key={index}
+                className="grid size-9 place-items-center rounded-lg border border-white/10 bg-white/[0.04] text-zinc-400"
+              >
+                <Icon className="size-4" />
+              </span>
             ))}
           </div>
         </div>
