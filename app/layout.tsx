@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,11 +9,12 @@ export const metadata: Metadata = {
     template: "%s | HirePilot AI",
   },
   description:
-    "A premium AI SaaS platform for resume analysis, interview questions, HR preparation, and skill gap insights.",
+    "Generate personalized interview questions and measure your ATS score by matching your resume against job descriptions — powered by real AI.",
   keywords: [
     "HirePilot AI",
     "AI interview preparation",
-    "resume analysis",
+    "ATS score checker",
+    "resume JD matching",
     "technical interview questions",
     "HR interview preparation",
   ],
@@ -24,13 +26,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className="h-full antialiased"
-    >
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        {children}
-        <Toaster richColors position="top-right" />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+        >
+          {children}
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

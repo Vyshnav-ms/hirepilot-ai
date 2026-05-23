@@ -1,17 +1,40 @@
-export type Difficulty = "Easy" | "Medium" | "Hard" | string;
+export type Difficulty = "Easy" | "Medium" | "Hard";
 
 export type QuestionCategory =
   | "technical"
   | "hr"
   | "project"
-  | "scenario"
-  | "behavioral";
+  | "behavioral"
+  | "scenario";
 
-export type InterviewQuestion = {
+export type TechnicalQuestion = {
   question: string;
   answer: string;
   difficulty: Difficulty;
-  category?: QuestionCategory;
+  skill: string;
+  topic: string;
+};
+
+export type HrQuestion = {
+  question: string;
+  answer: string;
+  purpose: string;
+};
+
+export type ProjectQuestion = {
+  question: string;
+  answer: string;
+  difficulty: Difficulty;
+};
+
+export type BehavioralQuestion = {
+  question: string;
+  suggestedAnswer: string;
+};
+
+export type ScenarioQuestion = {
+  question: string;
+  suggestedSolution: string;
 };
 
 export type AtsBreakdown = {
@@ -41,34 +64,10 @@ export type AtsAnalysis = {
   keywordInsights: KeywordInsight[];
 };
 
-export type RecommendedJob = {
-  id: string;
-  company: string;
-  role: string;
-  salary: string;
-  location: string;
-  source: string;
-  matchPercentage: number;
-  workMode: "Remote" | "Hybrid" | "On-site";
-  level: "Internship" | "Entry" | "Mid" | "Senior";
-  skills: string[];
-  applyUrl: string;
-  saved?: boolean;
+export type InterviewResult = {
+  technicalQuestions: TechnicalQuestion[];
+  hrQuestions: HrQuestion[];
+  projectQuestions: ProjectQuestion[];
+  behavioralQuestions: BehavioralQuestion[];
+  scenarioQuestions: ScenarioQuestion[];
 };
-
-export type CareerAnalysisResult = {
-  technicalQuestions: InterviewQuestion[];
-  hrQuestions: InterviewQuestion[];
-  projectQuestions: InterviewQuestion[];
-  behavioralQuestions: InterviewQuestion[];
-  scenarioQuestions: InterviewQuestion[];
-  atsAnalysis: AtsAnalysis;
-  skills: string[];
-  strengths: string[];
-  weaknesses: string[];
-  missingSkills: string[];
-  candidateStrengths: string[];
-  resumeSuggestions: string[];
-  recommendedJobs: RecommendedJob[];
-};
-

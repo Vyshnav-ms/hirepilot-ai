@@ -187,8 +187,8 @@ export function ResumeUploader({
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         className={cn(
-          "relative overflow-hidden rounded-2xl border border-dashed border-white/15 bg-white/[0.035] p-5 transition",
-          dragging && "border-blue-300/70 bg-blue-500/10",
+          "relative overflow-hidden rounded-2xl border border-dashed border-zinc-200 dark:border-white/15 bg-zinc-50 dark:bg-white/[0.035] p-5 transition",
+          dragging && "border-blue-400 dark:border-blue-300/70 bg-blue-50 dark:bg-blue-500/10",
           extracting && "pointer-events-none opacity-80"
         )}
       >
@@ -199,21 +199,21 @@ export function ResumeUploader({
           className="flex min-h-[150px] w-full flex-col items-center justify-center text-center"
         >
           {extracting ? (
-            <Loader2 className="size-9 animate-spin text-blue-200" />
+            <Loader2 className="size-9 animate-spin text-blue-500 dark:text-blue-200" />
           ) : (
-            <FileUp className="size-9 text-blue-200" />
+            <FileUp className="size-9 text-blue-500 dark:text-blue-200" />
           )}
-          <span className="mt-4 font-semibold">
+          <span className="mt-4 font-semibold text-zinc-700 dark:text-white">
             {extracting ? "Extracting resume text..." : `Upload or drop ${label} PDF`}
           </span>
-          <span className="mt-2 max-w-md text-sm leading-6 text-zinc-400">
+          <span className="mt-2 max-w-md text-sm leading-6 text-zinc-500 dark:text-zinc-400">
             {fileName || "Supports text-based PDFs and modern resume templates. OCR fallback is planned for scanned resumes."}
           </span>
         </button>
         {progress > 0 && (
-          <div className="absolute inset-x-5 bottom-4 h-1 overflow-hidden rounded-full bg-white/10">
+          <div className="absolute inset-x-5 bottom-4 h-1 overflow-hidden rounded-full bg-zinc-200 dark:bg-white/10">
             <motion.div
-              className="h-full rounded-full bg-gradient-to-r from-blue-400 to-violet-400"
+              className="h-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500"
               animate={{ width: `${progress}%` }}
             />
           </div>
@@ -221,15 +221,15 @@ export function ResumeUploader({
       </div>
 
       {error && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-400/20 bg-amber-500/10 p-3 text-sm text-amber-100">
+        <div className="flex items-start gap-3 rounded-xl border border-amber-300 dark:border-amber-400/20 bg-amber-50 dark:bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-100">
           <TriangleAlert className="mt-0.5 size-4 shrink-0" />
           <p>{error} You can paste resume text manually below.</p>
         </div>
       )}
 
       <div>
-        <div className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-300">
-          <FileText className="size-4 text-zinc-500" />
+        <div className="mb-2 flex items-center gap-2 text-sm font-medium text-zinc-600 dark:text-zinc-300">
+          <FileText className="size-4 text-zinc-400 dark:text-zinc-500" />
           Extracted or pasted resume text
         </div>
         <textarea

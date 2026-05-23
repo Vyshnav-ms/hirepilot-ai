@@ -3,12 +3,9 @@ import {
   ArrowRight,
   BadgeCheck,
   BrainCircuit,
-  BriefcaseBusiness,
-  FileSearch,
   MessageSquareText,
   ScanSearch,
   Sparkles,
-  WandSparkles,
 } from "lucide-react";
 import { FadeIn, HoverLift, PageTransition } from "@/components/motion-shell";
 import { SiteFooter } from "@/components/site-footer";
@@ -16,49 +13,54 @@ import { SiteNav } from "@/components/site-nav";
 
 const features = [
   {
-    icon: BrainCircuit,
-    title: "Technical Interview Questions",
-    description: "Generate role-specific technical questions with concise, candidate-aware answers.",
-  },
-  {
     icon: MessageSquareText,
-    title: "HR Interview Preparation",
-    description: "Practice behavioral questions with polished answers mapped to your profile.",
+    title: "Interview Question Generator",
+    description:
+      "Provide your resume and the job description. Get 250 personalized questions across Technical, HR, Projects, Behavioral, and Scenario categories.",
   },
   {
     icon: ScanSearch,
-    title: "AI Skill Gap Analysis",
-    description: "Spot missing skills and focus your preparation on what hiring teams expect.",
+    title: "ATS Score Checker",
+    description:
+      "Compare your resume against any job description. Get your ATS compatibility score, keyword gaps, missing skills, and improvement recommendations.",
   },
   {
-    icon: FileSearch,
-    title: "ATS + Resume Analysis",
-    description: "Measure keyword fit, missing skills, section completeness, and resume strength.",
+    icon: BrainCircuit,
+    title: "Resume ↔ JD Matching",
+    description:
+      "The AI reads both documents together — matching required skills, keywords, experience, and qualifications from the JD to your resume.",
   },
   {
-    icon: WandSparkles,
+    icon: BadgeCheck,
     title: "Personalized Answers",
-    description: "Receive answers that reflect your experience instead of generic templates.",
-  },
-  {
-    icon: BriefcaseBusiness,
-    title: "AI Job Recommendations",
-    description: "Find job matches across major platforms with role, salary, location, and fit insights.",
+    description:
+      "Every question answer is tailored to your actual experience, projects, and skills — not generic templates.",
   },
 ];
 
 const steps = [
-  "Upload resume PDF",
-  "Add target role context",
-  "Generate interview, ATS, and job intelligence",
+  "Upload your resume PDF or paste the text",
+  "Paste the target job description",
+  "Get 250 questions + your ATS score",
 ];
 
-const stats = ["200+ AI questions", "5 ATS score pillars", "8 job source categories", "Secure Supabase auth"];
-
 const faqs = [
-  ["Can I paste resume text manually?", "Yes. If PDF extraction fails or the resume is scanned, the dashboard shows a clean fallback text area."],
-  ["Does it support ATS optimization?", "Yes. The platform checks skills, experience, education, keywords, formatting, and section completeness."],
-  ["Are job recommendations live scraped?", "The app is designed for AI recommendations and source links. Direct third-party integrations can be added with official APIs."],
+  [
+    "Why do I need to provide a job description?",
+    "The AI compares your resume against the JD to generate role-specific questions and an accurate ATS score. Without the JD, the output would be generic rather than tailored to the actual role you're applying for.",
+  ],
+  [
+    "How are the interview questions personalized?",
+    "The AI reads your resume to understand your actual skills, projects, and experience level — then reads the JD to understand what the role requires. It generates questions specifically at the intersection of the two.",
+  ],
+  [
+    "What does the ATS score measure?",
+    "The ATS report measures keyword alignment, skills match, experience match, education match, and resume formatting strength — all calculated by comparing your resume to the specific job description you provide.",
+  ],
+  [
+    "Can I paste resume text manually?",
+    "Yes. If PDF extraction fails or your resume is scanned, a fallback text area lets you paste the content directly.",
+  ],
 ];
 
 export default function Home() {
@@ -68,85 +70,67 @@ export default function Home() {
         <SiteNav />
 
         <main>
+          {/* Hero */}
           <section className="relative mx-auto flex min-h-[calc(100vh-74px)] max-w-7xl flex-col items-center justify-center px-6 py-20 text-center">
             <FadeIn>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.055] px-4 py-2 text-sm text-zinc-300 shadow-2xl shadow-violet-950/30 backdrop-blur">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-zinc-300 backdrop-blur">
                 <Sparkles className="size-4 text-violet-300" />
-                AI Career Assistant Platform
+                Resume + Job Description Matching
               </div>
             </FadeIn>
 
             <FadeIn delay={0.08}>
-              <h1 className="mx-auto max-w-5xl text-5xl font-semibold leading-tight tracking-tight md:text-7xl">
+              <h1 className="mx-auto max-w-4xl text-5xl font-bold leading-tight tracking-tight md:text-7xl">
                 HirePilot AI
               </h1>
             </FadeIn>
 
-            <FadeIn delay={0.16}>
-              <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
-                A premium AI SaaS workspace for interview preparation, ATS optimization,
-                resume improvement, and skill-based job discovery.
+            <FadeIn delay={0.14}>
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-zinc-400 md:text-lg">
+                Upload your resume and paste a job description. Get 250 personalized interview questions and your ATS compatibility score — generated by AI from both documents together.
               </p>
             </FadeIn>
 
-            <FadeIn delay={0.24}>
-              <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+            <FadeIn delay={0.22}>
+              <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
                 <Link
                   href="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-black shadow-2xl shadow-violet-500/20 transition hover:scale-105 hover:shadow-violet-400/30"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-black shadow-2xl shadow-violet-500/20 transition hover:scale-105"
                 >
-                  Get Started <ArrowRight className="size-4" />
+                  Get Started Free <ArrowRight className="size-4" />
                 </Link>
                 <Link
                   href="/login"
-                  className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-6 py-3 font-semibold text-white transition hover:bg-white/[0.08]"
+                  className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] px-6 py-3 font-semibold text-white transition hover:bg-white/[0.09]"
                 >
-                  Login
+                  Sign In
                 </Link>
-              </div>
-            </FadeIn>
-
-            <div className="pointer-events-none absolute left-6 top-32 hidden rounded-xl border border-blue-400/20 bg-blue-400/10 px-4 py-3 text-sm text-blue-100 shadow-xl shadow-blue-500/10 backdrop-blur lg:block">
-              ATS readiness +32%
-            </div>
-            <div className="pointer-events-none absolute bottom-32 right-8 hidden rounded-xl border border-violet-400/20 bg-violet-400/10 px-4 py-3 text-sm text-violet-100 shadow-xl shadow-violet-500/10 backdrop-blur lg:block">
-              200 tailored questions ready
-            </div>
-
-            <FadeIn delay={0.32}>
-              <div className="mt-12 w-full max-w-5xl rounded-2xl border border-white/10 bg-black/50 p-4 text-left shadow-2xl shadow-black/40">
-                <div className="grid gap-3 md:grid-cols-4">
-                  {stats.map((stat) => (
-                    <div key={stat} className="rounded-xl border border-white/10 bg-white/[0.045] p-4">
-                      <p className="text-sm text-zinc-400">{stat}</p>
-                      <div className="mt-4 h-2 rounded-full bg-gradient-to-r from-blue-400 to-violet-400" />
-                    </div>
-                  ))}
-                </div>
               </div>
             </FadeIn>
           </section>
 
-          <section className="mx-auto max-w-7xl px-6 pb-20 pt-4">
+          {/* Features */}
+          <section className="mx-auto max-w-7xl px-6 pb-20">
             <FadeIn>
-              <div className="max-w-2xl">
-                <p className="text-sm font-medium uppercase tracking-[0.2em] text-violet-300">
-                  Features
-                </p>
-                <h2 className="mt-3 text-3xl font-semibold md:text-5xl">
-                  Everything your interview prep needs, structured beautifully.
+              <div className="mb-10 max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-widest text-violet-300">Features</p>
+                <h2 className="mt-3 text-3xl font-bold md:text-4xl">
+                  Built entirely on Resume ↔ JD matching.
                 </h2>
+                <p className="mt-3 text-zinc-400">
+                  Every feature compares your resume against the job description. No generic outputs.
+                </p>
               </div>
             </FadeIn>
 
-            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {features.map((feature, index) => (
-                <FadeIn key={feature.title} delay={index * 0.04}>
+            <div className="grid gap-5 md:grid-cols-2">
+              {features.map((feature, i) => (
+                <FadeIn key={feature.title} delay={i * 0.06}>
                   <HoverLift>
                     <div className="glass-card h-full rounded-2xl p-6">
-                      <feature.icon className="size-8 text-violet-300" />
-                      <h3 className="mt-5 text-xl font-semibold">{feature.title}</h3>
-                      <p className="mt-3 leading-7 text-zinc-400">{feature.description}</p>
+                      <feature.icon className="size-7 text-violet-300" />
+                      <h3 className="mt-4 text-lg font-semibold">{feature.title}</h3>
+                      <p className="mt-2 text-sm leading-7 text-zinc-400">{feature.description}</p>
                     </div>
                   </HoverLift>
                 </FadeIn>
@@ -154,26 +138,28 @@ export default function Home() {
             </div>
           </section>
 
-          <section className="border-y border-white/10 bg-white/[0.025] px-6 py-20">
-            <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          {/* How it works */}
+          <section className="border-y border-white/10 bg-white/[0.02] px-6 py-20">
+            <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-center">
               <FadeIn>
                 <div>
-                  <p className="text-sm font-medium uppercase tracking-[0.2em] text-blue-300">
-                    How it works
-                  </p>
-                  <h2 className="mt-3 text-3xl font-semibold md:text-5xl">
-                    From raw resume to polished interview plan.
+                  <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">How it works</p>
+                  <h2 className="mt-3 text-3xl font-bold md:text-4xl">
+                    From resume + JD to interview-ready.
                   </h2>
+                  <p className="mt-3 text-sm leading-7 text-zinc-400">
+                    Three steps. Real AI analysis. 250 personalized questions and your ATS score.
+                  </p>
                 </div>
               </FadeIn>
               <div className="grid gap-4 md:grid-cols-3">
-                {steps.map((step, index) => (
-                  <FadeIn key={step} delay={index * 0.08}>
-                    <div className="glass-card rounded-2xl p-6">
-                      <span className="grid size-10 place-items-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 font-semibold">
-                        {index + 1}
+                {steps.map((step, i) => (
+                  <FadeIn key={step} delay={i * 0.08}>
+                    <div className="glass-card rounded-2xl p-5">
+                      <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 text-sm font-bold">
+                        {i + 1}
                       </span>
-                      <p className="mt-5 font-medium">{step}</p>
+                      <p className="mt-4 text-sm font-medium leading-6">{step}</p>
                     </div>
                   </FadeIn>
                 ))}
@@ -181,73 +167,65 @@ export default function Home() {
             </div>
           </section>
 
+          {/* What gets generated */}
           <section className="mx-auto max-w-7xl px-6 py-20">
             <FadeIn>
-              <div className="max-w-2xl">
-                <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-300">
-                  Pricing
+              <div className="mb-10 max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300">Output</p>
+                <h2 className="mt-3 text-3xl font-bold md:text-4xl">250 questions per session.</h2>
+                <p className="mt-3 text-sm text-zinc-400">
+                  Each question is generated by analyzing both your resume and the job description together.
                 </p>
-                <h2 className="mt-3 text-3xl font-semibold md:text-5xl">
-                  Portfolio-ready SaaS packaging.
-                </h2>
               </div>
             </FadeIn>
-            <div className="mt-10 grid gap-5 md:grid-cols-3">
-              {["Starter", "Pro", "Career Studio"].map((plan, index) => (
-                <HoverLift key={plan}>
-                  <div className="glass-card rounded-2xl p-6">
-                    <h3 className="text-2xl font-semibold">{plan}</h3>
-                    <p className="mt-4 text-4xl font-semibold">{index === 0 ? "Free" : index === 1 ? "$9" : "$19"}</p>
-                    <p className="mt-3 text-sm leading-6 text-zinc-400">
-                      Interview generation, ATS analysis, resume insights, and AI job matching workflows.
-                    </p>
+            <div className="grid gap-4 sm:grid-cols-5">
+              {[
+                { label: "Technical", count: 50, desc: "Skill & technology specific", color: "from-blue-500/20 to-violet-500/20 text-blue-200" },
+                { label: "HR", count: 50, desc: "Background & culture fit", color: "from-emerald-500/20 to-teal-500/20 text-emerald-200" },
+                { label: "Projects", count: 50, desc: "Your actual projects", color: "from-orange-500/20 to-amber-500/20 text-orange-200" },
+                { label: "Behavioral", count: 50, desc: "STAR-format scenarios", color: "from-pink-500/20 to-rose-500/20 text-pink-200" },
+                { label: "Scenario", count: 50, desc: "Role-based situations", color: "from-violet-500/20 to-indigo-500/20 text-violet-200" },
+              ].map((item) => (
+                <HoverLift key={item.label}>
+                  <div className={`glass-card rounded-2xl p-5 bg-gradient-to-br ${item.color}`}>
+                    <p className="text-3xl font-bold">{item.count}</p>
+                    <p className="mt-1 font-semibold">{item.label}</p>
+                    <p className="mt-1 text-xs opacity-70">{item.desc}</p>
                   </div>
                 </HoverLift>
               ))}
             </div>
           </section>
 
-          <section className="mx-auto max-w-5xl px-6 pb-20">
+          {/* FAQ */}
+          <section className="mx-auto max-w-4xl px-6 pb-20">
             <FadeIn>
-              <h2 className="text-3xl font-semibold md:text-5xl">FAQ</h2>
+              <h2 className="mb-8 text-3xl font-bold">FAQ</h2>
             </FadeIn>
-            <div className="mt-8 grid gap-4">
-              {faqs.map(([question, answer]) => (
-                <div key={question} className="glass-card rounded-2xl p-6">
-                  <h3 className="text-xl font-semibold">{question}</h3>
-                  <p className="mt-3 leading-7 text-zinc-400">{answer}</p>
+            <div className="grid gap-4">
+              {faqs.map(([q, a]) => (
+                <div key={q} className="glass-card rounded-2xl p-6">
+                  <h3 className="font-semibold">{q}</h3>
+                  <p className="mt-3 text-sm leading-7 text-zinc-400">{a}</p>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="mx-auto grid max-w-7xl gap-5 px-6 py-20 md:grid-cols-3">
-            {["Clear preparation roadmap", "Confidence for technical rounds", "Answers shaped around your story"].map((benefit) => (
-              <HoverLift key={benefit}>
-                <div className="glass-card rounded-2xl p-6">
-                  <BadgeCheck className="size-7 text-emerald-300" />
-                  <h3 className="mt-4 text-xl font-semibold">{benefit}</h3>
-                  <p className="mt-3 text-zinc-400">
-                    Premium guidance with clean structure, readable insights, and practical next steps.
-                  </p>
-                </div>
-              </HoverLift>
-            ))}
-          </section>
-
+          {/* CTA */}
           <section className="px-6 pb-24">
-            <div className="glass-card mx-auto max-w-5xl rounded-3xl p-8 text-center md:p-12">
-              <h2 className="text-3xl font-semibold md:text-5xl">
-                Build your interview advantage today.
+            <div className="glass-card mx-auto max-w-4xl rounded-3xl p-8 text-center md:p-12">
+              <h2 className="text-3xl font-bold md:text-4xl">
+                Ready to prepare smarter?
               </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-zinc-400">
-                Generate tailored technical, HR, and project questions in a polished dashboard built for serious preparation.
+              <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-zinc-400">
+                Upload your resume, paste the job description, and let HirePilot AI generate your complete interview preparation plan.
               </p>
               <Link
-                href="/dashboard"
-                className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-black transition hover:scale-105"
+                href="/register"
+                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 font-semibold text-black shadow-2xl shadow-violet-500/20 transition hover:scale-[1.03]"
               >
-                Open Dashboard <ArrowRight className="size-4" />
+                Start for Free <ArrowRight className="size-4" />
               </Link>
             </div>
           </section>
