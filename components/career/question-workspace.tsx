@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bookmark, ChevronDown, Copy, Search } from "lucide-react";
+import { Bookmark, ChevronDown, Copy, Search, Layers } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DownloadMenu } from "@/components/career/download-menu";
 import {
   BehavioralQuestion,
   Difficulty,
@@ -314,8 +315,32 @@ export function QuestionWorkspace({ result }: { result: InterviewResult }) {
     },
   ];
 
+  const totalCount =
+    result.technicalQuestions.length +
+    result.hrQuestions.length +
+    result.projectQuestions.length +
+    result.behavioralQuestions.length +
+    result.scenarioQuestions.length;
+
   return (
     <section className="space-y-4">
+      {/* ─── Export Header ─────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-gradient-to-r from-violet-500/5 to-blue-500/5 px-5 py-3.5">
+        <div className="flex items-center gap-3">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-violet-500/20">
+            <Layers className="size-4 text-violet-300" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white">
+              {totalCount} Questions Generated
+            </p>
+            <p className="text-xs text-zinc-500">5 sections · Ready to export</p>
+          </div>
+        </div>
+        <DownloadMenu result={result} />
+      </div>
+
+      {/* ─── Difficulty Filter ─────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
         <p className="text-sm font-semibold text-white">Filter by difficulty:</p>
         {["All", "Easy", "Medium", "Hard"].map((d) => (
