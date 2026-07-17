@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -167,6 +167,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gmail_tokens: {
+        Row: {
+          user_id: string
+          gmail_email: string
+          access_token: string
+          refresh_token: string | null
+          expiry_date: string
+          updated_at: string
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          gmail_email: string
+          access_token: string
+          refresh_token?: string | null
+          expiry_date: string
+          updated_at?: string
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          gmail_email?: string
+          access_token?: string
+          refresh_token?: string | null
+          expiry_date?: string
+          updated_at?: string
+          created_at?: string
+        }
+        Relationships: []
       }
       email_logs: {
         Row: {

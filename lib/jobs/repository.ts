@@ -44,7 +44,7 @@ export async function persistScrapedJobs({
     source_url: job.sourceUrl,
     apply_url: job.applyUrl,
     posted_at: job.postedAt || null,
-    raw_payload: job.rawPayload || {},
+    raw_payload: (job.rawPayload || {}) as any,
   }));
 
   const { error } = await supabase
