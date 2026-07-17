@@ -113,56 +113,53 @@
 
 /* ─── Dark Theme ──────────────────────────────────────────────────── */
 .dark {
-  --background: oklch(0.105 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.16 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.16 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.88 0.12 283);
-  --primary-foreground: oklch(0.12 0 0);
-  --secondary: oklch(0.22 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.23 0 0);
-  --muted-foreground: oklch(0.74 0 0);
-  --accent: oklch(0.24 0.08 259);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.7 0.14 283);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Developer-Core Theme (DESIGN.md) */
+  --background: #0b1326;
+  --foreground: #dae2fd;
+  --card: #171f33; /* surface-container */
+  --card-foreground: #dae2fd;
+  --popover: #222a3d; /* surface-container-high */
+  --popover-foreground: #dae2fd;
+  --primary: #4d8eff; /* primary-container */
+  --primary-foreground: #ffffff;
+  --secondary: #3e495d; /* secondary-container */
+  --secondary-foreground: #aeb9d0;
+  --muted: #131b2e; /* surface-container-low */
+  --muted-foreground: #c2c6d6; /* on-surface-variant */
+  --accent: #4d8eff;
+  --accent-foreground: #ffffff;
+  --destructive: #ffb4ab;
+  --border: #334155;
+  --input: #060e20; /* surface-container-lowest */
+  --ring: #4d8eff;
+  
+  --sidebar: #060e20;
+  --sidebar-foreground: #dae2fd;
+  --sidebar-primary: #4d8eff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #4d8eff;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #424754; /* outline-variant */
+  --sidebar-ring: #4d8eff;
 
   /* ── App-specific custom props ── */
-  --hp-glass-bg: rgba(255, 255, 255, 0.045);
-  --hp-glass-border: rgba(255, 255, 255, 0.1);
-  --hp-glass-shadow: 0 4px 32px rgba(0, 0, 0, 0.3);
-  --hp-input-bg: rgba(255, 255, 255, 0.055);
-  --hp-input-border: rgba(255, 255, 255, 0.1);
-  --hp-input-text: oklch(0.985 0 0);
-  --hp-input-placeholder: oklch(0.5 0 0);
-  --hp-body-glow1: rgb(59 130 246 / 0.12);
-  --hp-body-glow2: rgb(168 85 247 / 0.14);
-  --hp-body-base: #050505;
-  --hp-sidebar-bg: rgba(0, 0, 0, 0.55);
-  --hp-header-bg: rgba(0, 0, 0, 0.6);
-  --hp-nav-active-bg: rgba(255, 255, 255, 0.08);
-  --hp-nav-active-border: rgba(255, 255, 255, 0.1);
-  --hp-nav-hover-bg: rgba(255, 255, 255, 0.06);
-  --hp-muted-text: oklch(0.74 0 0);
-  --hp-subtle-text: oklch(0.56 0 0);
+  --hp-glass-bg: #171f33;
+  --hp-glass-border: #424754;
+  --hp-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --hp-input-bg: #060e20;
+  --hp-input-border: #334155;
+  --hp-input-text: #dae2fd;
+  --hp-input-placeholder: #8c909f;
+  --hp-body-glow1: rgba(77, 142, 255, 0.04);
+  --hp-body-glow2: rgba(77, 142, 255, 0.04);
+  --hp-body-base: #0b1326;
+  --hp-sidebar-bg: #060e20;
+  --hp-header-bg: rgba(11, 19, 38, 0.8);
+  --hp-nav-active-bg: #4d8eff;
+  --hp-nav-active-border: #4d8eff;
+  --hp-nav-hover-bg: rgba(218, 226, 253, 0.06);
+  --hp-muted-text: #c2c6d6;
+  --hp-subtle-text: #8c909f;
 }
 
 /* ─── Base ────────────────────────────────────────────────────────── */
@@ -246,8 +243,16 @@ footer,
     background-image: linear-gradient(
       to right,
       var(--foreground),
-      oklch(0.75 0.1 240),
-      oklch(0.7 0.15 283)
+      #adc6ff,
+      #4d8eff
     );
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground font-semibold rounded-lg shadow-sm transition-all;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+  .btn-primary:hover {
+    filter: brightness(1.1);
   }
 }

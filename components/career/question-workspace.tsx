@@ -31,13 +31,13 @@ const PER_PAGE = 10;
 function usePagination<T>(items: T[], query: string, filterFn: (item: T, q: string) => boolean) {
   const [page, setPage] = useState(1);
   const filtered = useMemo(() => {
-    setPage(1);
     return items.filter((item) => filterFn(item, query));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, query]);
   const maxPage = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-  const pageItems = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-  return { filtered, pageItems, page, setPage, maxPage };
+  const safePage = Math.min(page, maxPage);
+  const pageItems = filtered.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+  return { filtered, pageItems, page: safePage, setPage, maxPage };
 }
 
 function Pager({ page, maxPage, onPrev, onNext }: { page: number; maxPage: number; onPrev: () => void; onNext: () => void }) {
@@ -250,7 +250,7 @@ export function QuestionWorkspace({ result }: { result: InterviewResult }) {
   const techPaged = usePagination(
     result.technicalQuestions,
     techQuery + diffFilter,
-    (item, _) => {
+    (item) => {
       const q = techQuery.toLowerCase();
       const matchQ = item.question.toLowerCase().includes(q) ||
         item.answer.toLowerCase().includes(q) ||
@@ -269,7 +269,7 @@ export function QuestionWorkspace({ result }: { result: InterviewResult }) {
   const projPaged = usePagination(
     result.projectQuestions,
     projQuery + diffFilter,
-    (item, _) => {
+    (item) => {
       const q = projQuery.toLowerCase();
       const matchQ = item.question.toLowerCase().includes(q) || item.answer.toLowerCase().includes(q);
       const matchD = diffFilter === "All" || item.difficulty === diffFilter;

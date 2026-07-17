@@ -5,15 +5,25 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Home,
+  BarChart3,
+  Bot,
+  BriefcaseBusiness,
+  FileArchive,
+  FileSearch,
   LogOut,
   Menu,
   MessageSquareText,
   PanelLeftClose,
   PanelLeftOpen,
-  ScanSearch,
   Settings,
   UserRound,
   X,
+  Globe,
+  Info,
+  ShieldCheck,
+  Search,
+  Bell,
+  Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -23,9 +33,13 @@ import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/dashboard/interview", label: "Interview Generator", icon: MessageSquareText },
-  { href: "/dashboard/ats", label: "ATS Score Checker", icon: ScanSearch },
+  { href: "/dashboard", label: "Dashboard", icon: Home },
+  { href: "/dashboard/interview", label: "Interview Qs Generator", icon: MessageSquareText },
+  { href: "/dashboard/resume-analyzer", label: "Resume Analyzer", icon: FileSearch },
+  { href: "/dashboard/applications/new", label: "Applications", icon: BriefcaseBusiness },
+  { href: "/dashboard/resume-vault", label: "Resume Vault", icon: FileArchive },
+  { href: "/dashboard/applications/history", label: "Application History", icon: BriefcaseBusiness },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
@@ -61,11 +75,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* Logo */}
       <div className="flex items-center justify-between gap-3 px-2 pb-6">
         {!collapsed && (
-          <Link href="/dashboard" className="min-w-0">
+          <Link href="/" className="min-w-0">
             <BrandLogo className="text-base" markClassName="size-9 rounded-xl" />
           </Link>
         )}
-        {collapsed && <BrandMark className="size-9 rounded-xl" />}
+        {collapsed && (
+          <Link href="/">
+            <BrandMark className="size-9 rounded-xl" />
+          </Link>
+        )}
         <button
           type="button"
           onClick={() => setCollapsed((v) => !v)}
@@ -87,7 +105,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* Nav */}
       <nav className="flex-1 space-y-1">
         {navItems.map((item) => {
-          const active = pathname === item.href;
+          const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
           return (
             <Link
               key={item.href}
@@ -118,37 +136,19 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </nav>
 
       {/* Footer */}
-      <div className="mt-auto space-y-2 border-t pt-4 border-black/8 dark:border-white/10">
-        <div
-          className={cn(
-            "flex items-center gap-3 rounded-xl border p-3",
-            "border-black/8 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.04]",
-            collapsed && "justify-center px-2"
-          )}
-        >
-          <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600">
-            <UserRound className="size-4 text-white" />
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="truncate text-xs font-medium text-foreground">{email || "User"}</p>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500">HirePilot AI</p>
-            </div>
-          )}
+      <div className="mt-auto space-y-4 border-t pt-4 border-white/10">
+        
+        {/* Public Links */}
+        <div className="flex flex-col gap-1">
+          <Link href="/dashboard/settings" className={cn("flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-zinc-400 hover:text-white transition", collapsed && "justify-center px-2")}>
+            <UserRound className="size-4" />
+            {!collapsed && "Profile"}
+          </Link>
+          <button onClick={handleLogout} className={cn("flex items-center gap-3 px-3 py-1.5 text-xs font-medium text-red-400 hover:text-red-300 transition text-left", collapsed && "justify-center px-2")}>
+            <LogOut className="size-4" />
+            {!collapsed && "Logout"}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className={cn(
-            "flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-sm font-medium transition",
-            "border-black/8 dark:border-white/10 bg-black/[0.03] dark:bg-white/[0.04]",
-            "text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200 dark:hover:border-red-500/20",
-            collapsed && "justify-center px-2"
-          )}
-        >
-          <LogOut className="size-4 shrink-0" />
-          {!collapsed && "Logout"}
-        </button>
       </div>
     </aside>
   );
@@ -181,25 +181,40 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* Main */}
       <div className={cn("flex min-h-screen flex-col transition-all duration-300", collapsed ? "lg:pl-[72px]" : "lg:pl-[260px]")}>
         <header
-          className="sticky top-0 z-30 border-b px-5 py-3.5 backdrop-blur-xl border-black/10 dark:border-white/10"
+          className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 px-5 py-4 backdrop-blur-xl"
           style={{ background: "var(--hp-header-bg)" }}
         >
-          <div className="flex items-center gap-4">
+          <div className="flex w-full items-center gap-4 lg:w-1/2">
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="rounded-xl border p-2 transition border-black/10 dark:border-white/10 text-zinc-500 dark:text-zinc-400 hover:bg-black/[0.04] dark:hover:bg-white/[0.08] lg:hidden"
+              className="rounded-xl border border-white/10 p-2 text-zinc-400 transition hover:bg-white/[0.08] lg:hidden"
               aria-label="Open navigation"
             >
               <Menu className="size-5" />
             </button>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-violet-600 dark:text-blue-300">
-                HirePilot AI
-              </p>
-              <h1 className="text-base font-semibold leading-tight text-foreground">
-                AI Career Platform
-              </h1>
+            <div className="relative hidden w-full max-w-md lg:block">
+              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-zinc-500" />
+              <input 
+                type="text" 
+                placeholder="Search for resumes, jobs, or AI insights..." 
+                className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.03] pl-10 pr-4 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition"
+              />
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button className="text-zinc-400 transition hover:text-white hidden sm:block">
+              <Bell className="size-5" />
+            </button>
+            <div className="flex items-center gap-3 pl-2 sm:border-l border-white/10">
+              <div className="hidden text-right sm:block">
+                <p className="text-sm font-semibold text-white">{email ? email.split('@')[0] : "User"}</p>
+                <p className="text-[10px] text-zinc-400">{email || "HirePilot Account"}</p>
+              </div>
+              <div className="grid size-9 shrink-0 place-items-center rounded-full bg-blue-600/20 border border-blue-500/30">
+                <UserRound className="size-4 text-blue-400" />
+              </div>
             </div>
           </div>
         </header>

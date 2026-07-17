@@ -66,15 +66,15 @@ const faqs = [
 export default function Home() {
   return (
     <PageTransition>
-      <div className="min-h-screen overflow-hidden text-white">
+      <div className="min-h-screen overflow-hidden text-white bg-[#0b1326]">
         <SiteNav />
 
         <main>
           {/* Hero */}
           <section className="relative mx-auto flex min-h-[calc(100vh-74px)] max-w-7xl flex-col items-center justify-center px-6 py-20 text-center">
             <FadeIn>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-zinc-300 backdrop-blur">
-                <Sparkles className="size-4 text-violet-300" />
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#131b2e] px-4 py-2 text-sm text-zinc-300 shadow-xl shadow-blue-900/20 backdrop-blur">
+                <Sparkles className="size-4 text-[#4d8eff]" />
                 Resume + Job Description Matching
               </div>
             </FadeIn>
@@ -95,7 +95,7 @@ export default function Home() {
               <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
                 <Link
                   href="/register"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-black shadow-2xl shadow-violet-500/20 transition hover:scale-105"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#4d8eff] px-6 py-3 font-semibold text-[#00285d] shadow-2xl shadow-blue-500/20 transition hover:scale-105"
                 >
                   Get Started Free <ArrowRight className="size-4" />
                 </Link>
@@ -113,7 +113,7 @@ export default function Home() {
           <section className="mx-auto max-w-7xl px-6 pb-20">
             <FadeIn>
               <div className="mb-10 max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-widest text-violet-300">Features</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#4d8eff]">Features</p>
                 <h2 className="mt-3 text-3xl font-bold md:text-4xl">
                   Built entirely on Resume ↔ JD matching.
                 </h2>
@@ -127,8 +127,8 @@ export default function Home() {
               {features.map((feature, i) => (
                 <FadeIn key={feature.title} delay={i * 0.06}>
                   <HoverLift>
-                    <div className="glass-card h-full rounded-2xl p-6">
-                      <feature.icon className="size-7 text-violet-300" />
+                    <div className="glass-card h-full rounded-2xl p-6 bg-[#131b2e]/50 border-white/5">
+                      <feature.icon className="size-7 text-[#4d8eff]" />
                       <h3 className="mt-4 text-lg font-semibold">{feature.title}</h3>
                       <p className="mt-2 text-sm leading-7 text-zinc-400">{feature.description}</p>
                     </div>
@@ -139,11 +139,11 @@ export default function Home() {
           </section>
 
           {/* How it works */}
-          <section className="border-y border-white/10 bg-white/[0.02] px-6 py-20">
+          <section className="border-y border-white/10 bg-[#060e20] px-6 py-20 shadow-inner">
             <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1.4fr] lg:items-center">
               <FadeIn>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-blue-300">How it works</p>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-[#4d8eff]">How it works</p>
                   <h2 className="mt-3 text-3xl font-bold md:text-4xl">
                     From resume + JD to interview-ready.
                   </h2>
@@ -155,8 +155,8 @@ export default function Home() {
               <div className="grid gap-4 md:grid-cols-3">
                 {steps.map((step, i) => (
                   <FadeIn key={step} delay={i * 0.08}>
-                    <div className="glass-card rounded-2xl p-5">
-                      <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 text-sm font-bold">
+                    <div className="glass-card rounded-2xl p-5 bg-[#131b2e]/60 border-white/5">
+                      <span className="grid size-9 place-items-center rounded-lg bg-gradient-to-br from-[#4d8eff] to-[#005ac2] text-sm font-bold text-white shadow-lg">
                         {i + 1}
                       </span>
                       <p className="mt-4 text-sm font-medium leading-6">{step}</p>
@@ -171,7 +171,7 @@ export default function Home() {
           <section className="mx-auto max-w-7xl px-6 py-20">
             <FadeIn>
               <div className="mb-10 max-w-2xl">
-                <p className="text-xs font-semibold uppercase tracking-widest text-emerald-300">Output</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-[#4ae176]">Output</p>
                 <h2 className="mt-3 text-3xl font-bold md:text-4xl">250 questions per session.</h2>
                 <p className="mt-3 text-sm text-zinc-400">
                   Each question is generated by analyzing both your resume and the job description together.
@@ -204,7 +204,7 @@ export default function Home() {
             </FadeIn>
             <div className="grid gap-4">
               {faqs.map(([q, a]) => (
-                <div key={q} className="glass-card rounded-2xl p-6">
+                <div key={q} className="glass-card rounded-2xl p-6 bg-[#131b2e]/50 border-white/5">
                   <h3 className="font-semibold">{q}</h3>
                   <p className="mt-3 text-sm leading-7 text-zinc-400">{a}</p>
                 </div>
@@ -214,7 +214,7 @@ export default function Home() {
 
           {/* CTA */}
           <section className="px-6 pb-24">
-            <div className="glass-card mx-auto max-w-4xl rounded-3xl p-8 text-center md:p-12">
+            <div className="glass-card mx-auto max-w-4xl rounded-3xl p-8 text-center md:p-12 bg-gradient-to-b from-[#131b2e] to-[#060e20] border-white/10 shadow-2xl shadow-blue-900/10">
               <h2 className="text-3xl font-bold md:text-4xl">
                 Ready to prepare smarter?
               </h2>
@@ -223,7 +223,7 @@ export default function Home() {
               </p>
               <Link
                 href="/register"
-                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3 font-semibold text-black shadow-2xl shadow-violet-500/20 transition hover:scale-[1.03]"
+                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#4d8eff] px-7 py-3 font-semibold text-[#00285d] shadow-2xl shadow-blue-500/20 transition hover:scale-[1.03]"
               >
                 Start for Free <ArrowRight className="size-4" />
               </Link>
