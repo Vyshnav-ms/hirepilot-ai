@@ -7,9 +7,13 @@ import { ResumeSectionJson } from "@/lib/application-types";
 
 declare global {
   var pdfjsWorker: typeof pdfjsWorkerModule | undefined;
+  var DOMMatrix: any;
+  var Path2D: any;
 }
 
 globalThis.pdfjsWorker ||= pdfjsWorkerModule;
+globalThis.DOMMatrix ??= class DOMMatrix {} as any;
+globalThis.Path2D ??= class Path2D {} as any;
 
 type PdfTextItem = {
   str: string;
