@@ -1,15 +1,6 @@
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
-import * as pdfjsWorkerModule from "pdfjs-dist/legacy/build/pdf.worker.mjs";
-import mammoth from "mammoth";
-import { createWorker } from "tesseract.js";
 import { z } from "zod";
 import { ResumeSectionJson } from "@/lib/application-types";
 
-declare global {
-  var pdfjsWorker: typeof pdfjsWorkerModule | undefined;
-}
-
-globalThis.pdfjsWorker ||= pdfjsWorkerModule;
 (globalThis as any).DOMMatrix ??= class DOMMatrix {} as any;
 (globalThis as any).Path2D ??= class Path2D {} as any;
 
@@ -23,6 +14,10 @@ function isTextItem(item: unknown): item is PdfTextItem {
 }
 
 export async function extractPdfText(data: Uint8Array): Promise<string> {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const pdfjsWorkerModule = await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
+  (globalThis as any).pdfjsWorker ||= pdfjsWorkerModule;
+  
   const pdf = await getDocument({ data, disableFontFace: true, useWorkerFetch: false }).promise;
   const pages: string[] = [];
 
@@ -47,11 +42,14 @@ export async function extractPdfText(data: Uint8Array): Promise<string> {
 }
 
 export async function extractDocxText(data: Uint8Array): Promise<string> {
+  const mammothModule = await import("mammoth");
+  const mammoth = mammothModule.default || mammothModule;
   const result = await mammoth.extractRawText({ buffer: Buffer.from(data) });
   return sanitizeText(result.value);
 }
 
 export async function extractImageText(data: Uint8Array): Promise<string> {
+  const { createWorker } = await import("tesseract.js");
   const worker = await createWorker("eng");
   try {
     const result = await worker.recognize(Buffer.from(data));
