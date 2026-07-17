@@ -4,7 +4,11 @@ import { google } from "googleapis";
 export function getOAuthClient() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/+$/, "") || "";
+  let rawUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  if (rawUrl && !rawUrl.startsWith("http")) {
+    rawUrl = `https://${rawUrl}`;
+  }
+  const baseUrl = rawUrl.replace(/\/+$/, "");
   const redirectUri = `${baseUrl}/api/auth/gmail/callback`;
 
   if (!clientId || !clientSecret) {
