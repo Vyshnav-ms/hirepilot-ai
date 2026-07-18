@@ -105,6 +105,8 @@ Do not use clickbait.
 ---
 
 ## Email Structure
+IMPORTANT FORMATTING RULE: You MUST leave a blank line (using double line breaks, e.g., '\n\n') after the greeting, between every paragraph, and before the sign-off (e.g., "Best regards").
+
 1. Greeting
 If recruiter name exists:
 Dear Mr./Ms. <Name>,
