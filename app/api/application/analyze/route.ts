@@ -113,7 +113,7 @@ Candidate Email: ${auth.user.email}
 
     const [analysisCompletion, emailCompletion] = await Promise.all([
       groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: [
           { role: "system", content: "Return strict JSON only. Do not return markdown." },
           { role: "user", content: prompt },
@@ -124,7 +124,7 @@ Candidate Email: ${auth.user.email}
         response_format: { type: "json_object" },
       }),
       groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: [
           { role: "system", content: EMAIL_DRAFT_SYSTEM_PROMPT },
           { role: "user", content: emailPrompt },
