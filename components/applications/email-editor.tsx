@@ -16,6 +16,7 @@ type EmailEditorProps = {
   onRegenerate?: () => void;
   sending?: boolean;
   regenerating?: boolean;
+  defaultAttachmentName?: string;
 };
 
 export function EmailEditor(props: EmailEditorProps) {
@@ -55,8 +56,8 @@ export function EmailEditor(props: EmailEditorProps) {
           <Button type="button" variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => fileInputRef.current?.click()}>
             <Paperclip className="size-3.5 mr-1" /> Attach
           </Button>
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 max-w-[120px] truncate">
-            {file ? file.name : "Master Resume"}
+          <span className="text-xs text-zinc-500 dark:text-zinc-400 max-w-[160px] truncate">
+            {file ? file.name : props.defaultAttachmentName || "Master Resume"}
           </span>
           {file && (
             <button type="button" className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200" onClick={() => setFile(null)}>

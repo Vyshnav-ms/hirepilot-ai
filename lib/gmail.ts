@@ -58,6 +58,56 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   };
 }
 
+/** Encode a header value as RFC 2047 Base64 if it contains non-ASCII */
+function encodeSubject(subject: string): string {
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x00-\x7F]*$/.test(subject)) return subject;
+  const encoded = Buffer.from(subject, "utf-8").toString("base64");
+  return `=?UTF-8?B?${encoded}?=`;
+}
+
+/** Encode a UTF-8 string as quoted-printable */
+function toQuotedPrintable(str: string): string {
+  const buf = Buffer.from(str, "utf-8");
+  const lines: string[] = [];
+  let line = "";
+
+  for (let i = 0; i < buf.length; i++) {
+    const byte = buf[i];
+    let encoded: string;
+
+    if (byte === 0x0d && buf[i + 1] === 0x0a) {
+      // CRLF — hard line break
+      lines.push(line);
+      line = "";
+      i++; // skip LF
+      continue;
+    } else if (byte === 0x0a) {
+      // bare LF — treat as line break
+      lines.push(line);
+      line = "";
+      continue;
+    } else if (
+      byte === 0x09 || // tab
+      (byte >= 0x20 && byte <= 0x7e && byte !== 0x3d) // printable ASCII except '='
+    ) {
+      encoded = String.fromCharCode(byte);
+    } else {
+      encoded = `=${byte.toString(16).toUpperCase().padStart(2, "0")}`;
+    }
+
+    // Soft line break at 76 chars
+    if (line.length + encoded.length > 75) {
+      lines.push(line + "=");
+      line = "";
+    }
+    line += encoded;
+  }
+
+  lines.push(line);
+  return lines.join("\r\n");
+}
+
 /** Build a base64url-encoded RFC 2822 MIME message */
 function buildMimeMessage({
   from,
@@ -78,18 +128,19 @@ function buildMimeMessage({
 }): string {
   const boundary = `----=_Part_${Math.random().toString(36).substring(2)}`;
   const htmlBody = body.replace(/\n/g, "<br>");
+  const qpBody = toQuotedPrintable(htmlBody);
   const emailLines = [
     `From: ${from}`,
     `To: ${to}`,
-    `Subject: ${subject}`,
+    `Subject: ${encodeSubject(subject)}`,
     "MIME-Version: 1.0",
     `Content-Type: multipart/mixed; boundary="${boundary}"`,
     "",
     `--${boundary}`,
     "Content-Type: text/html; charset=UTF-8",
-    "Content-Transfer-Encoding: 7bit",
+    "Content-Transfer-Encoding: quoted-printable",
     "",
-    htmlBody,
+    qpBody,
   ];
 
   if (attachment) {

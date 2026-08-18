@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { isAuthContext, requireApiUser } from "@/lib/application-auth";
 import { groq } from "@/lib/ai-json";
-import { extractEmails, sanitizeText } from "@/lib/document-parsing";
+import { extractEmails, sanitizeText, textFromUploadedFile } from "@/lib/document-parsing";
 import { JobApplicationAnalysis } from "@/lib/application-types";
 import { EMAIL_DRAFT_SYSTEM_PROMPT } from "@/lib/prompts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const analyzeSchema = z.object({
-  jobDescription: z.string().min(30),
-  hrEmail: z.email().optional().nullable(),
-});
 
 const FALLBACK: JobApplicationAnalysis = {
   atsScore: 0,
@@ -42,8 +36,20 @@ export async function POST(req: NextRequest) {
     const auth = await requireApiUser(req);
     if (!isAuthContext(auth)) return auth;
 
-    const body = analyzeSchema.parse(await req.json());
-    const jobDescription = sanitizeText(body.jobDescription);
+    // Parse FormData (supports optional resume file upload)
+    const formData = await req.formData();
+    const jobDescriptionRaw = formData.get("jobDescription");
+    const hrEmailRaw = formData.get("hrEmail");
+    const resumeFileRaw = formData.get("resumeFile");
+
+    if (typeof jobDescriptionRaw !== "string" || jobDescriptionRaw.length < 30) {
+      return NextResponse.json({ success: false, error: "Job description must be at least 30 characters." }, { status: 400 });
+    }
+
+    const jobDescription = sanitizeText(jobDescriptionRaw);
+    const hrEmailInput = typeof hrEmailRaw === "string" && hrEmailRaw ? hrEmailRaw : null;
+
+    // Always fetch master resume (needed for fallback and storage reference)
     const { data: resume, error: resumeError } = await auth.admin
       .from("master_resume")
       .select("*")
@@ -55,6 +61,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Upload your master resume before creating an application." }, { status: 409 });
     }
 
+    // Extract text from uploaded resume file, or fall back to master resume
+    let resumeText: string = resume.resume_text;
+    if (resumeFileRaw instanceof File && resumeFileRaw.size > 0) {
+      const customText = await textFromUploadedFile(resumeFileRaw);
+      if (customText) {
+        resumeText = customText;
+      }
+    }
+
     if (!process.env.GROQ_API_KEY) {
       return NextResponse.json({ success: false, error: "AI service is not configured. Please set GROQ_API_KEY." }, { status: 503 });
     }
@@ -64,7 +79,7 @@ export async function POST(req: NextRequest) {
 Compare the supplied RESUME and JOB DESCRIPTION only. Never invent facts. If company, role, education, or experience details are missing, return null.
 
 RESUME:
-${resume.resume_text}
+${resumeText}
 
 JOB DESCRIPTION:
 ${jobDescription}
@@ -103,7 +118,7 @@ Rules:
 
     const emailPrompt = `
 Master Resume:
-${resume.resume_text}
+${resumeText}
 
 Job Description:
 ${jobDescription}
@@ -157,7 +172,7 @@ Candidate Email: ${auth.user.email}
         keywords: parsed.importantKeywords,
         email_subject: parsed.emailSubject,
         email_body: parsed.professionalEmail,
-        hr_email: body.hrEmail ?? emails[0] ?? null,
+        hr_email: hrEmailInput ?? emails[0] ?? null,
         resume_url: resume.resume_url,
         status: "Draft",
         analysis_json: parsed,

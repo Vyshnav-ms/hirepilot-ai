@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BriefcaseBusiness, FileText, ImageIcon, Loader2, Mail, Sparkles } from "lucide-react";
+import { BriefcaseBusiness, FileText, ImageIcon, Loader2, Mail, Sparkles, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { ATSGauge } from "@/components/applications/ats-gauge";
 import { EmailEditor } from "@/components/applications/email-editor";
@@ -30,6 +30,7 @@ export default function NewApplicationPage() {
   const [sending, setSending] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   useEffect(() => {
     authFetch("/api/auth/gmail/status")
@@ -81,10 +82,13 @@ export default function NewApplicationPage() {
     setAnalyzing(true);
     try {
       await parseText(jdText);
+      const formData = new FormData();
+      formData.append("jobDescription", jdText);
+      if (hrEmail) formData.append("hrEmail", hrEmail);
+      if (resumeFile) formData.append("resumeFile", resumeFile);
       const response = await authFetch("/api/application/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobDescription: jdText, hrEmail: hrEmail || null }),
+        body: formData,
       });
       const data = (await response.json()) as { success: boolean; data?: AnalyzeResponse; error?: string };
       if (!response.ok || !data.data) throw new Error(data.error || "Analysis failed.");
@@ -113,6 +117,9 @@ export default function NewApplicationPage() {
       formData.append("body", emailBody);
       if (file) {
         formData.append("file", file);
+      } else if (resumeFile) {
+        // Use the optional resume uploaded during analysis
+        formData.append("file", resumeFile);
       }
 
       const response = await authFetch("/api/application/send", {
@@ -189,6 +196,32 @@ export default function NewApplicationPage() {
             </TabsContent>
           ))}
         </Tabs>
+        {/* Optional resume upload */}
+        <div className="mt-5 rounded-xl border border-dashed border-zinc-300 bg-zinc-50/50 p-4 dark:border-white/10 dark:bg-white/[0.02]">
+          <div className="mb-3 flex items-center gap-2">
+            <Upload className="size-4 text-blue-500" />
+            <p className="text-sm font-medium">Custom Resume <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">(optional)</span></p>
+          </div>
+          <p className="mb-3 text-xs text-zinc-500 dark:text-zinc-400">
+            Upload a specific resume for this application. If skipped, your master resume will be used.
+          </p>
+          {resumeFile ? (
+            <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 dark:border-blue-500/20 dark:bg-blue-500/10">
+              <FileText className="size-4 shrink-0 text-blue-600 dark:text-blue-300" />
+              <span className="flex-1 truncate text-sm font-medium text-blue-700 dark:text-blue-200">{resumeFile.name}</span>
+              <button type="button" onClick={() => setResumeFile(null)} className="rounded-full p-0.5 text-blue-400 transition-colors hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-500/20" aria-label="Remove resume">
+                <X className="size-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm font-medium transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-blue-500/30 dark:hover:bg-blue-500/5">
+              <Upload className="size-4 text-zinc-400" />
+              Choose PDF or DOCX
+              <input className="sr-only" type="file" accept=".pdf,application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={(e) => { const f = e.target.files?.[0]; if (f) setResumeFile(f); e.target.value = ""; }} />
+            </label>
+          )}
+        </div>
+
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs text-zinc-500">{wordCount} words extracted</p>
           {emails.length > 0 && (
@@ -198,7 +231,7 @@ export default function NewApplicationPage() {
           )}
           <Button type="button" size="lg" onClick={analyze} disabled={analyzing}>
             {analyzing ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-            Analyze Resume + JD
+            Analyze{resumeFile ? " Custom" : ""} Resume + JD
           </Button>
         </div>
       </section>
@@ -258,7 +291,7 @@ export default function NewApplicationPage() {
               </div>
             </div>
           )}
-          <EmailEditor subject={subject} body={emailBody} hrEmail={hrEmail} onSubjectChange={setSubject} onBodyChange={setEmailBody} onHrEmailChange={setHrEmail} onSend={send} sending={sending} onRegenerate={regenerate} regenerating={regenerating} />
+          <EmailEditor subject={subject} body={emailBody} hrEmail={hrEmail} onSubjectChange={setSubject} onBodyChange={setEmailBody} onHrEmailChange={setHrEmail} onSend={send} sending={sending} onRegenerate={regenerate} regenerating={regenerating} defaultAttachmentName={resumeFile ? resumeFile.name : undefined} />
         </section>
       )}
     </div>
